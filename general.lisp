@@ -466,10 +466,10 @@ for (i = 0; i < coll.length; i++) {
   (format stream (html:tag "h1" "Application Subsystems"))
 
   (let ((subsystems (append *sub-systems*
-                            (remove nil (list (when simian:*load-calendar-framework* (list* "Calendar Entities" (calendar-entities)))
+                            (remove nil (list (when simian:*load-calendar-framework* (list* "Calendar Entities" (calendar:calendar-entities)))
                                               (list* "Framework Entities" (framework-entities app))
                                               (list* "Application Framework" (application-framework-entities app))
-                                              (list* "Full Schema" (schema-entities app))))))
+                                              (list* "Full Schema" (schema-entities app)))))))
     (dolist (sub subsystems)
       (let ((name (car sub)) (entities (cdr sub)))
         (apply #'create-module-graph name entities)

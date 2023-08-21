@@ -13,8 +13,9 @@
 
 (in-package simian)
 
-(defpackage "WEB-DOCS"
-  (:use "SIMIAN" "CL"))
+(defpackage :web-docs
+  (:use :simian :calendar :cl)
+  (:export #:write-html-docs))
 
 (in-package :web-docs)
 
@@ -23,11 +24,17 @@
   (load-unparser "html")
   (load-unparser "dot")
   (load (merge-pathnames "general.lisp" *load-truename*))
+  (format t "~% loaded ~a" (merge-pathnames "general.lisp" *load-truename*))
   (load (merge-pathnames "er-diagrams.lisp" *load-truename*))
+  (format t "~% loaded ~a" (merge-pathnames "er-diagrams.lisp" *load-truename*))
   (load (merge-pathnames "relationships.lisp" *load-truename*))
+  (format t "~% loaded ~a" (merge-pathnames "relationships.lisp" *load-truename*))
   (load (merge-pathnames "entities.lisp" *load-truename*))
+  (format t "~% loaded ~a" (merge-pathnames "entities.lisp" *load-truename*))
   (load (merge-pathnames "attributes.lisp" *load-truename*))
+  (format t "~% loaded ~a" (merge-pathnames "attributes.lisp" *load-truename*))
   (load (merge-pathnames "interface.lisp" *load-truename*))
+  (format t "~% loaded ~a" (merge-pathnames "interface.lisp" *load-truename*))
   (if (probe-file (merge-pathnames "local.lisp" *load-truename*))
       (load (merge-pathnames "local.lisp" *load-truename*))))
 
