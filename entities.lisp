@@ -22,7 +22,7 @@
                       "write-html-docs in soft-sim/src/generators/web-docs/entities.lisp")
           :link (list :rel "stylesheet" :type "text/css"
                       :href (strcat "../" (file-namestring (documentation-css-filepath)))))
-  (format stream (html::heading 1 (format nil "Technical Detail for the ~a Entity "
+  (format stream (html:heading 1 (format nil "Technical Detail for the ~a Entity "
                                          (name ent)))))
 
 (defmethod document :after ((ent entity) (clarity (eql :detailed))
@@ -50,7 +50,7 @@
   (format stream
           "<p align=\"center\">The ~a entity is ~a (not including internal system entities) ~
            in the ~a application.~a<hr border=1px>" (short-plural ent)
-           (html::link (format nil "one of ~d entities" (length (application-entities *application*)))
+           (html:link (format nil "one of ~d entities" (length (application-entities *application*)))
                        "../entities.html")
            (home-page-link)
            (describe-source ent)))
@@ -66,7 +66,7 @@
             (strcat blurb
                     (format nil "<br><br>~s was defined with seed data, which can be accessed ~a ~
                                 or viewed at the botom of this page in table format."
-                            (short-name ent) (html::link "here in CSV form" (strcat (name ent) ".csv"))))))
+                            (short-name ent) (html:link "here in CSV form" (strcat (name ent) ".csv"))))))
     (write-synopsis blurb stream)))
 
 (defun describe-entity-constraint-context (event)
@@ -77,7 +77,7 @@
          (if (constraints ent)
              (format nil "~{<tr><td>~a</td></tr>~}"
                      (mapcar #'(lambda(c)
-                                 (format nil "~a ~a" (english::unparse-expression (formula c))
+                                 (format nil "~a ~a" (english:unparse-expression (formula c))
                                          (if (typep c 'constraint)
                                              (describe-entity-constraint-context (event c))
                                              "")))
@@ -85,13 +85,13 @@
              "<tr><td width=\"800px\">There are no record level constraints</tr></td>")))
     (format stream
             (write-data-section
-             "Constraints:" (apply #'html::tag "table" content *plain-table-attributes*)))))
+             "Constraints:" (apply #'html:tag "table" content *plain-table-attributes*)))))
 
 (defun state-headings ()
-    (html::tag "tr"
+    (html:tag "tr"
      (strcat
-      (html::tag "td" "<b>State</b>" :align "center")
-      (html::tag "td" "<b>Predicate</b>" :align "center"))))
+      (html:tag "td" "<b>State</b>" :align "center")
+      (html:tag "td" "<b>Predicate</b>" :align "center"))))
 
 (defmethod write-state-section ((ent entity) &optional stream)
   (let ((content
@@ -100,13 +100,13 @@
                      (list* (state-headings)
                             (mapcar #'(lambda(st)
                                         (format nil "~a ~a"
-                                                (html::tag "td" (short-name st))
-                                                (html::tag "td" (english::unparse-expression (predicate st)))))
+                                                (html:tag "td" (short-name st))
+                                                (html:tag "td" (english:unparse-expression (predicate st)))))
                                     (states ent))))
              "<tr><td colspan=2 width=\"1100px\">There are no user defined entity states</tr></td>")))
     (format stream
             (write-data-section
-             "Entity States:" (apply #'html::tag "table" content *plain-table-attributes*)))))
+             "Entity States:" (apply #'html:tag "table" content *plain-table-attributes*)))))
 
 (defmethod document ((ent entity) (clarity (eql :detailed)) (format (eql :html)) &optional stream)
   (write-blurb ent stream)
@@ -183,38 +183,38 @@
       (warn "no code samples to display"))))
 
 (defun code-sample-table-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Description") (line-feed)
-               (html::tag "th" "Generated Code") (line-feed)))))
+       (strcat (html:tag "th" "Description") (line-feed)
+               (html:tag "th" "Generated Code") (line-feed)))))
 
 (defun code-sample-rows (content)
   (mapcar #'(lambda (code-chunk)
               (with-nesting
                 (list (list (car code-chunk) :valign "top" :align "left")
-                      (list (html::tag
+                      (list (html:tag
                              "pre"
-                             (html::tag "code" (cadr code-chunk)))
+                             (html:tag "code" (cadr code-chunk)))
                             :align "left"))))
           content))
 
 (defun relationship-role-table-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Relationship Name") (line-feed)
-               (html::tag "th" "My Role") (line-feed)
-               (html::tag "th" "Role Description") (line-feed)
-               (html::tag "th" "Associative Type") (line-feed)
-               (html::tag "th" "Multiplicity") (line-feed)
-               (html::tag "th" "Constraints") (line-feed)))))
+       (strcat (html:tag "th" "Relationship Name") (line-feed)
+               (html:tag "th" "My Role") (line-feed)
+               (html:tag "th" "Role Description") (line-feed)
+               (html:tag "th" "Associative Type") (line-feed)
+               (html:tag "th" "Multiplicity") (line-feed)
+               (html:tag "th" "Constraints") (line-feed)))))
 
 (defmethod relationship-role-table-rows ((ent entity))
   (append (mapcar #'(lambda (role)
                       (let ((my-relationship (or (ignore-errors (my-relationship role)) (car (relationships role)))))
                         (with-nesting
-                            (list (list (html::link (long-name my-relationship)
+                            (list (list (html:link (long-name my-relationship)
                                                     (strcat "../" (document-link my-relationship)))
                                         :align "left")
                                   (if (string-equal (name role) (name (entity role)))
@@ -224,7 +224,7 @@
                                   (list (type-of my-relationship) :align "left")
                                   (list (multiplicity role) :align "center")
                                   (list (format-english-list
-                                         (mapcar #'english::unparse-expression
+                                         (mapcar #'english:unparse-expression
                                                  (mapcar #'formula (append (constraints role)
                                                                            (apply #'append
                                                                                   (mapcar #'constraints (my-relations role)))))))
@@ -249,20 +249,20 @@
       super-rows)))
 
 (defun multivalued-attribute-table-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Internal Name") (line-feed)
-               (html::tag "th" "UI Short Name") (line-feed)
-               (html::tag "th" "UI Descriptive Name") (line-feed)
-               (html::tag "th" "Data Repository") (line-feed)
-               (html::tag "th" "Components") (line-feed)
-               (html::tag "th" "Additional Description") (line-feed)))))
+       (strcat (html:tag "th" "Internal Name") (line-feed)
+               (html:tag "th" "UI Short Name") (line-feed)
+               (html:tag "th" "UI Descriptive Name") (line-feed)
+               (html:tag "th" "Data Repository") (line-feed)
+               (html:tag "th" "Components") (line-feed)
+               (html:tag "th" "Additional Description") (line-feed)))))
 
 (defmethod multivalued-attribute-rows ((ent entity))
   (append (mapcar #'(lambda (att)
                       (with-nesting
-                        (list (list (html::link (name att) (strcat "../" (document-link att))) :align "left")
+                        (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
                               (list (short-name att) :align "left")
                               (list (long-name att) :align "left")
                               (list (make-links-to-object-reference
@@ -281,20 +281,20 @@
           (super-class-table-rows ent #'multivalued-attribute-rows 6)))
 
 (defun audit-attribute-table-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Internal Name") (line-feed)
-               (html::tag "th" "UI Short Name") (line-feed)
-               (html::tag "th" "UI Descriptive Name") (line-feed)
-               (html::tag "th" "Use Type") (line-feed)
-               (html::tag "th" "Data Type") (line-feed)
-               (html::tag "th" "Additional Description") (line-feed)))))
+       (strcat (html:tag "th" "Internal Name") (line-feed)
+               (html:tag "th" "UI Short Name") (line-feed)
+               (html:tag "th" "UI Descriptive Name") (line-feed)
+               (html:tag "th" "Use Type") (line-feed)
+               (html:tag "th" "Data Type") (line-feed)
+               (html:tag "th" "Additional Description") (line-feed)))))
 
 (defmethod audit-attribute-rows ((ent entity))
   (mapcar #'(lambda (att)
               (with-nesting
-                (list (list (html::link (name att) (strcat "../" (document-link att))) :align "left")
+                (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
                       (list (short-name att) :align "left")
                       (list (long-name att) :align "left")
                       (list (name (logical-type att)) :align "center")
@@ -303,22 +303,22 @@
           (sort (copy-list (audit-attributes ent)) #'string-lessp :key #'name)))
 
 (defun db-key-table-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Internal Name") (line-feed)
-               (html::tag "th" "UI Short Name") (line-feed)
-               (html::tag "th" "UI Descriptive Name") (line-feed)
-               (html::tag "th" "Target Entity") (line-feed)
-               (html::tag "th" "Use Type") (line-feed)
-               (html::tag "th" "Mandatory?") (line-feed)
-               (html::tag "th" "Additional Description") (line-feed)))))
+       (strcat (html:tag "th" "Internal Name") (line-feed)
+               (html:tag "th" "UI Short Name") (line-feed)
+               (html:tag "th" "UI Descriptive Name") (line-feed)
+               (html:tag "th" "Target Entity") (line-feed)
+               (html:tag "th" "Use Type") (line-feed)
+               (html:tag "th" "Mandatory?") (line-feed)
+               (html:tag "th" "Additional Description") (line-feed)))))
 
 (defmethod db-key-rows ((ent entity))
   (append (mapcar
            #'(lambda (att)
                (with-nesting
-                   (list (list (html::link (name att) (strcat "../" (document-link att))) :align "left")
+                   (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
                          (list (short-name att) :align "left")
                          (list (long-name att) :align "left")
                          (list (typecase att
@@ -337,23 +337,23 @@
           (super-class-table-rows ent #'db-key-rows 7)))
 
 (defun user-attribute-table-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Internal Name") (line-feed)
-               (html::tag "th" "UI Short Name") (line-feed)
-               (html::tag "th" "UI Descriptive Name") (line-feed)
-               (html::tag "th" "Use Type") (line-feed)
-               (html::tag "th" "Data Type") (line-feed)
-               (html::tag "th" "Unique?") (line-feed)
-               (html::tag "th" "Mandatory?") (line-feed)
-               (html::tag "th" "Other Constraints") (line-feed)
-               (html::tag "th" "Additional Description") (line-feed)))))
+       (strcat (html:tag "th" "Internal Name") (line-feed)
+               (html:tag "th" "UI Short Name") (line-feed)
+               (html:tag "th" "UI Descriptive Name") (line-feed)
+               (html:tag "th" "Use Type") (line-feed)
+               (html:tag "th" "Data Type") (line-feed)
+               (html:tag "th" "Unique?") (line-feed)
+               (html:tag "th" "Mandatory?") (line-feed)
+               (html:tag "th" "Other Constraints") (line-feed)
+               (html:tag "th" "Additional Description") (line-feed)))))
 
 (defmethod user-defined-stored-attribute-rows ((ent entity))
   (append (mapcar #'(lambda (att)
                       (with-nesting
-                        (list (list (html::link (name att) (strcat "../" (document-link att))) :align "left")
+                        (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
                               (list (short-name att) :align "left")
                               (list (long-name att) :align "left")
                               (list (name (logical-type att)) :align "center")
@@ -362,7 +362,7 @@
                               (list (if (nullable? att) "" "mandatory") :align "center")
                               (list (if (constraints att)
                                         (format nil "~{~a~^<br>~}"
-                                                (mapcar #'english::unparse-expression
+                                                (mapcar #'english:unparse-expression
                                                         (mapcar #'formula (constraints att))))
                                         "no other constraints"))
                               (list (or (description att) "") :align "left"))))
@@ -372,7 +372,7 @@
 (defmethod auditable-attribute-rows ((ent entity))
   (mapcar #'(lambda (att)
               (with-nesting
-                (list (list (html::link (name att) (strcat "../" (document-link att))) :align "left")
+                (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
                       (list (short-name att) :align "left")
                       (list (long-name att) :align "left")
                       (list (name (logical-type att)) :align "center")
@@ -383,26 +383,26 @@
           (sort (copy-list (auditable-attributes ent)) #'string-lessp :key #'name)))
 
 (defun summary-attribute-table-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Internal Name") (line-feed)
-               (html::tag "th" "UI Short Name") (line-feed)
-               (html::tag "th" "UI Descriptive Name") (line-feed)
-               (html::tag "th" "Summary Type") (line-feed)
-               (html::tag "th" "Use Type") (line-feed)
-               (html::tag "th" "Source Data") (line-feed)
-               (html::tag "th" "Additional Description") (line-feed)))))
+       (strcat (html:tag "th" "Internal Name") (line-feed)
+               (html:tag "th" "UI Short Name") (line-feed)
+               (html:tag "th" "UI Descriptive Name") (line-feed)
+               (html:tag "th" "Summary Type") (line-feed)
+               (html:tag "th" "Use Type") (line-feed)
+               (html:tag "th" "Source Data") (line-feed)
+               (html:tag "th" "Additional Description") (line-feed)))))
 
 (defmethod summary-attribute-rows ((ent entity))
   (append (mapcar #'(lambda (att)
                       (with-nesting
-                        (list (list (html::link (name att) (strcat "../" (document-link att))) :align "left")
+                        (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
                               (list (short-name att) :align "left")
                               (list (long-name att) :align "left")
                               (list (string-downcase (format nil "~a" (summary-type att))) :align "center")
                               (list (name (logical-type att)) :align "center")
-                              (list (html::link
+                              (list (html:link
                                      (format nil "~a.~a" (name (my-entity (source att))) (name (source att)))
                                                (strcat "../" (document-link (source att))))
                                     :align "center")
@@ -411,24 +411,24 @@
           (super-class-table-rows ent #'summary-attribute-rows 7)))
 
 (defun derived-attribute-table-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Internal Name") (line-feed)
-               (html::tag "th" "UI Short Name") (line-feed)
-               (html::tag "th" "UI Descriptive Name") (line-feed)
-               (html::tag "th" "Use Type") (line-feed)
-               (html::tag "th" "Formula") (line-feed)
-               (html::tag "th" "Additional Description") (line-feed)))))
+       (strcat (html:tag "th" "Internal Name") (line-feed)
+               (html:tag "th" "UI Short Name") (line-feed)
+               (html:tag "th" "UI Descriptive Name") (line-feed)
+               (html:tag "th" "Use Type") (line-feed)
+               (html:tag "th" "Formula") (line-feed)
+               (html:tag "th" "Additional Description") (line-feed)))))
 
 (defmethod user-defined-derived-attribute-rows ((ent entity))
   (append (mapcar #'(lambda (att)
                       (with-nesting
-                        (list (list (html::link (name att) (strcat "../" (document-link att))) :align "left")
+                        (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
                               (list (short-name att) :align "left")
                               (list (long-name att) :align "left")
                               (list (name (logical-type att)) :align "center")
-                              (list (english::unparse (formula att)) :align "left")
+                              (list (english:unparse (formula att)) :align "left")
                               (list (or (description att) "") :align "left"))))
                   (sort (copy-list (calculated-attributes ent)) #'string-lessp :key #'name))
           (super-class-table-rows ent #'user-defined-derived-attribute-rows 6)))

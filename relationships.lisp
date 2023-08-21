@@ -22,7 +22,7 @@
           :meta (list :file-source
                       "write-html-docs in soft-sim/src/generators/relationships.lisp")
           :style *documentation-stylesheet*)
-  (format stream (html::heading 1 (format nil "~a" (short-name rel)))))
+  (format stream (html:heading 1 (format nil "~a" (short-name rel)))))
 
 
 (defmethod document :after ((rel binary-relationship) (clarity (eql :detailed))
@@ -108,7 +108,7 @@
         (list "Constraints"
               (if (constraints rel)
                   (format nil "~{~a~^<br>~}"
-                          (mapcar #'english::unparse-expression (constraints rel)))
+                          (mapcar #'english:unparse-expression (constraints rel)))
                   "there are no constraints on this side of the relationship"))))
 
 ;;;===========================================================================

@@ -138,12 +138,12 @@ img {   max-width: 100%;
 
 (defun write-data-section (label content)
   (strcat
-   (html::open-tag "table" :style "border:0")
-   (html::open-tag "tr")
-   (html::tag "td" label :width "160px" :style "font-size:large; font-weight:bold; border:0")
-   (html::tag "td" content :style "border:0")
-   (html::close-tag "tr")
-   (html::close-tag "table")))
+   (html:open-tag "table" :style "border:0")
+   (html:open-tag "tr")
+   (html:tag "td" label :width "160px" :style "font-size:large; font-weight:bold; border:0")
+   (html:tag "td" content :style "border:0")
+   (html:close-tag "tr")
+   (html:close-tag "table")))
 
 (defmethod write-designation-section ((obj named-object) &optional stream)
   (let ((content (with-output-to-string (str)
@@ -177,15 +177,15 @@ img {   max-width: 100%;
       (strcat preamble (linked-view-name view name-string) postscript)))
 
 (defun linked-view-name (view &optional link-text)
-  (html::link (or link-text (long-name view))
+  (html:link (or link-text (long-name view))
              (strcat "../" (document-link view))))
 
 (defun linked-table-name (ent &optional link-text)
-  (html::link (or link-text (short-plural ent))
+  (html:link (or link-text (short-plural ent))
              (strcat "../" (document-link ent))))
 
 (defun linked-attribute-name (att &optional link-text)
-  (html::link (or link-text (short-name att))
+  (html:link (or link-text (short-name att))
              (strcat "../" (document-link att))))
 
 (defmethod document-link ((rel binary-relationship))
@@ -248,15 +248,15 @@ img {   max-width: 100%;
                                :meta '(:file-source "write-html-docs in soft-sim/src/documentation.lisp")
                                :link (list :rel "stylesheet" :type "text/css"
                                            :href (file-namestring (documentation-css-filepath))))
-            (format main (html::heading 1 (format nil "~a Technical Documentation" (long-name app))))
+            (format main (html:heading 1 (format nil "~a Technical Documentation" (long-name app))))
             (format main "
 This page provides technical documentation for the ~a web application. The ~a application is owned by ~
 ~a and this material is for internal use. All intellectual property contained herein remains ~a's ~
 own.  Below you can find links to further detail." (long-name app) (id app) (client app) (client app))
-            (format main (html::heading 3 (html::link "Application Views" "interface.html")))
-            (format main (html::heading 3 (html::link "Entity Definitions" "entities.html")))
-            (format main (html::heading 3 (html::link "Entity Relationships" "relationships.html")))
-            (format main (html::heading 3 (html::link "Application Subsystems" "subsystems.html")))
+            (format main (html:heading 3 (html:link "Application Views" "interface.html")))
+            (format main (html:heading 3 (html:link "Entity Definitions" "entities.html")))
+            (format main (html:heading 3 (html:link "Entity Relationships" "relationships.html")))
+            (format main (html:heading 3 (html:link "Application Subsystems" "subsystems.html")))
 
             (with-open-file (intf (document-file-path "" "interface" "html")
                                   :direction :output :if-exists :supersede)
@@ -288,7 +288,7 @@ own.  Below you can find links to further detail." (long-name app) (id app) (cli
    :meta (list :file-source "write-html-docs in soft_sim/generators/web-docs/general.lisp")
    :link (list :rel "stylesheet" :type "text/css"
                :href (file-namestring (documentation-css-filepath))))
-  (format stream (html::link "Documentation Home" "application.html"))
+  (format stream (html:link "Documentation Home" "application.html"))
   (let ((core-ents (remove-if #'(lambda(table)
                                  (or (typep table 'lookup-table)
                                      (typep table 'attribute-table)))
@@ -315,16 +315,16 @@ own.  Below you can find links to further detail." (long-name app) (id app) (cli
     (write-entity-section "Framework Entities"
      (sort (copy-list frame-ents) #'string-lessp :key #'name)
      stream)
-    (format stream (html::link "Documentation Home" "application.html"))
+    (format stream (html:link "Documentation Home" "application.html"))
     (write-html-footer stream (doc-timestamp))))
 
 (defun write-entity-section (name entities stream)
-  (format stream (html::tag "h1" name))
+  (format stream (html:tag "h1" name))
   (format stream "~%<ul>~%")
   (dolist (ent entities)
     (unless (typep ent 'audit-entity)
       (format stream "~%<li>~a</li>"
-              (html::link (name ent) (document-link ent))))
+              (html:link (name ent) (document-link ent))))
     (create-entity-graphs ent)
     (when (ignore-errors (seed-data ent))
       (with-open-file (seed (document-file-path "entities" (name ent) "csv")
@@ -349,18 +349,18 @@ own.  Below you can find links to further detail." (long-name app) (id app) (cli
    :meta (list :file-source "write-html-docs in soft_sim/generators/web-docs/general.lisp")
    :link (list :rel "stylesheet" :type "text/css"
                :href (file-namestring (documentation-css-filepath))))
-  (format stream (html::link "Documentation Home" "application.html"))
-  (format stream (html::tag "h1" "Relationships"))
+  (format stream (html:link "Documentation Home" "application.html"))
+  (format stream (html:tag "h1" "Relationships"))
   (format stream "~%<ul>~%")
   (dolist (rel (find-all-relationships))
     (format stream "~%<li>~a : <small><em>(~a)</em></small></li>"
-            (html::link (short-name rel) (document-link rel))
+            (html:link (short-name rel) (document-link rel))
             (ascii-depiction rel))
     (with-open-file (doc (document-file-path "relationships" (unambiguous-name rel) "html")
                          :direction :output :if-exists :supersede)
       (document rel :detailed :html doc)))
   (format stream "~%</ul>~%")
-  (format stream (html::link "Documentation Home" "application.html"))
+  (format stream (html:link "Documentation Home" "application.html"))
   (write-html-footer stream (doc-timestamp)))
 
 (defun ascii-depiction (rel)
@@ -370,39 +370,39 @@ own.  Below you can find links to further detail." (long-name app) (id app) (cli
 
 (defun list-contents (space stream)
   (with-nesting
-      (format stream (html::tag "li"
-                        (html::tag "b"
+      (format stream (html:tag "li"
+                        (html:tag "b"
                            (format nil "~a (~s)" (long-name space) (name space)))))
     (when (or (views space) (sub-spaces space))
-      (format stream "~%~a~a~%" (html::make-indent)
-                  (html::open-tag "ul" :style "column-count: 1; border-left: 0px"))
+      (format stream "~%~a~a~%" (html:make-indent)
+                  (html:open-tag "ul" :style "column-count: 1; border-left: 0px"))
       (with-nesting
           (when (views space)
             (dolist (view (views space))
-              (format stream "~%~a<li>~a</li>" (html::make-indent)
-                      (html::link (long-name view) (document-link view)))))
+              (format stream "~%~a<li>~a</li>" (html:make-indent)
+                      (html:link (long-name view) (document-link view)))))
         (when (sub-spaces space)
           (dolist (spc (sub-spaces space))
             (list-contents spc stream))))
-      (format stream "~%~a</ul>~%" (html::make-indent)))))
+      (format stream "~%~a</ul>~%" (html:make-indent)))))
 
 
 (defun unparse-space (space &optional stream)
   (let ((views (views space))
         (sub-spaces (sub-spaces space)))
-    (format stream "~%~a~a" (html::make-indent)
-            (html::button (long-name space) :class "collapsible"))
-    (format stream "~%~a~a" (html::make-indent)
-            (html::div
+    (format stream "~%~a~a" (html:make-indent)
+            (html:button (long-name space) :class "collapsible"))
+    (format stream "~%~a~a" (html:make-indent)
+            (html:div
              (if (and (null views) (null sub-spaces))
                  "(this space has no content)"
                  (with-output-to-string (str)
                    (when views
                      (format str
-                             (html::ltag nil
+                             (html:ltag nil
                                 (loop for view in views
                                       collect
-                                      (html::link (long-name view) (document-link view)))
+                                      (html:link (long-name view) (document-link view)))
                                 :style "column-count: 1; border-left: 0px")))
                    (when sub-spaces
                      (with-nesting
@@ -414,25 +414,25 @@ own.  Below you can find links to further detail." (long-name app) (id app) (cli
 (defun unparse-space (space &optional stream)
   (let ((views (views space))
         (sub-spaces (sub-spaces space)))
-    (format stream (html::open-tag "ul" :style "border-left: 0px #FFFFE0; column-count: 1"))
-    (format stream "~%~a~a~a" (html::make-indent) (html::open-tag "li") (long-name space))
-    (format stream "~%~a~a" (html::make-indent)
+    (format stream (html:open-tag "ul" :style "border-left: 0px #FFFFE0; column-count: 1"))
+    (format stream "~%~a~a~a" (html:make-indent) (html:open-tag "li") (long-name space))
+    (format stream "~%~a~a" (html:make-indent)
             (if (and (null views) (null sub-spaces))
                  "(this space has no content)"
                  (with-output-to-string (str)
                    (when views
                      (format str
-                             (html::ltag nil
+                             (html:ltag nil
                                 (loop for view in views
                                       collect
-                                      (html::link (long-name view) (document-link view)))
+                                      (html:link (long-name view) (document-link view)))
                                 :style "column-count: 1; border-left: 0px")))
                    (when sub-spaces
                      (with-nesting
                          (dolist (sub sub-spaces)
                            (unparse-space sub str)))))))
-    (format stream "~%~a~a" (html::make-indent) (html::close-tag "li"))
-    (format stream (html::close-tag "ul"))))
+    (format stream "~%~a~a" (html:make-indent) (html:close-tag "li"))
+    (format stream (html:close-tag "ul"))))
 
 (defun write-view-menu (app stream)
   (dolist (space (remove-if #'parent-space (spaces app)))
@@ -462,8 +462,8 @@ for (i = 0; i < coll.length; i++) {
    :meta (list :file-source "write-html-docs in soft_sim/generators/web-docs/general.lisp")
    :link (list :rel "stylesheet" :type "text/css"
                :href (file-namestring (documentation-css-filepath))))
-  (format stream (html::link "Documentation Home" "application.html"))
-  (format stream (html::tag "h1" "Application Subsystems"))
+  (format stream (html:link "Documentation Home" "application.html"))
+  (format stream (html:tag "h1" "Application Subsystems"))
 
   (let ((subsystems (append *sub-systems*
                             (remove nil (list (when simian:*load-calendar-framework* (list* "Calendar Entities" (calendar-entities)))
@@ -473,10 +473,10 @@ for (i = 0; i < coll.length; i++) {
     (dolist (sub subsystems)
       (let ((name (car sub)) (entities (cdr sub)))
         (apply #'create-module-graph name entities)
-        (format stream "~%<p>~a~%~a</p>" (html::heading 2 name)
-                (html::image (strcat (replace-all name " " "-") ".gif"))))))
+        (format stream "~%<p>~a~%~a</p>" (html:heading 2 name)
+                (html:image (strcat (replace-all name " " "-") ".gif"))))))
 
-  (format stream (html::p (html::link "Documentation Home" "application.html")))
+  (format stream (html:p (html:link "Documentation Home" "application.html")))
   (write-html-footer stream (doc-timestamp)))
 
 (defun write-interface-page (app stream)
@@ -486,8 +486,8 @@ for (i = 0; i < coll.length; i++) {
    :meta (list :file-source "write-html-docs in soft_sim/generators/web-docs/general.lisp")
    :link (list :rel "stylesheet" :type "text/css"
                :href (file-namestring (documentation-css-filepath))))
-  (format stream (html::link "Documentation Home" "application.html"))
-  (format stream (html::tag "h1" "Application Views and Navigation Structure"))
+  (format stream (html:link "Documentation Home" "application.html"))
+  (format stream (html:tag "h1" "Application Views and Navigation Structure"))
   (write-view-menu app stream)
   (dolist (view (views app))
     (create-view-graphs view)
@@ -501,19 +501,19 @@ for (i = 0; i < coll.length; i++) {
                                :direction :output :if-exists :supersede)
         (ignore-errors
          (document asp :detailed :html asp-doc)))))
-  (format stream (html::p (html::link "Documentation Home" "application.html")))
+  (format stream (html:p (html:link "Documentation Home" "application.html")))
   (write-html-footer stream (doc-timestamp)))
 
 (defun write-synopsis (content &optional stream)
-  (format stream (html::open-tag "table" :style "border:0"))
+  (format stream (html:open-tag "table" :style "border:0"))
     (format stream "<tr style=\"border:0\">~a~a</tr>"
-            (html::tag "td" "Synopsis:" :width "180px"
+            (html:tag "td" "Synopsis:" :width "180px"
                          :style "font-size:large; font-weight:bold; border:0")
-            (html::tag "td" content :width "900px" :style "border:0"))
-    (format stream (html::close-tag "table")))
+            (html:tag "td" content :width "900px" :style "border:0"))
+    (format stream (html:close-tag "table")))
 
 (defun write-table-section (stream title hlevel headings rows)
-  (format stream (html::heading hlevel title))
+  (format stream (html:heading hlevel title))
   (if rows
       (progn
         (format stream "<table>~a" (line-feed))
@@ -522,30 +522,30 @@ for (i = 0; i < coll.length; i++) {
           (format stream "~a" (apply #'table-rows nil rows)))
         (format stream "</table>~a" (line-feed)))
       (format stream
-         (html::p
-             (html::tag "em" (format nil "There are no ~a" title))))))
+         (html:p
+             (html:tag "em" (format nil "There are no ~a" title))))))
 
 (defun datasheet-headings ()
-  (html::tag
+  (html:tag
    "tr"
      (with-nesting
-       (strcat (html::tag "th" "Property") (line-feed)
-               (html::tag "th" "Value") (line-feed)))))
+       (strcat (html:tag "th" "Property") (line-feed)
+               (html:tag "th" "Value") (line-feed)))))
 
 (defun make-table-cells (&rest cells)
   (let ((frmt-str (format nil "~~{~~a~a~~}" (line-feed))))
     (format nil frmt-str
             (mapcar #'(lambda (cell)
                         (etypecase cell
-                          (symbol (html::tag "td" (symbol-name cell)))
-                          (number (html::tag "td" cell))
-                          (string (html::tag "td" cell))
-                          (list (apply #'html::tag "td" (car cell) (cdr cell)))))
+                          (symbol (html:tag "td" (symbol-name cell)))
+                          (number (html:tag "td" cell))
+                          (string (html:tag "td" cell))
+                          (list (apply #'html:tag "td" (car cell) (cdr cell)))))
                     cells))))
 
 (defun table-rows (attributes &rest rows)
   (let ((format-string (format nil "~~a~~{~a~a~~a</tr>~~}~a"
-                               (line-feed) (apply #'html::open-tag "tr" attributes) (line-feed))))
+                               (line-feed) (apply #'html:open-tag "tr" attributes) (line-feed))))
     (format nil format-string
             (line-feed)
             (with-nesting
@@ -555,64 +555,64 @@ for (i = 0; i < coll.length; i++) {
 
 (defun write-html-header (stream &key title style meta link)
   (format stream "<!DOCTYPE html>~%<html>~%")
-  (format stream "~a~%" (html::open-tag "head"))
-  (when title (format stream (html::tag "title" title)))
-  (when style (format stream (html::tag "style" style)))
-  (when meta (format stream "~%~a" (apply #'html::open-tag "meta" meta)))
-  (when link (format stream "~%~a~%" (apply #'html::open-tag "link" link)))
-  (format stream "~a~%" (html::close-tag "head"))
-  (format stream "~a~%" (html::open-tag "body")))
+  (format stream "~a~%" (html:open-tag "head"))
+  (when title (format stream (html:tag "title" title)))
+  (when style (format stream (html:tag "style" style)))
+  (when meta (format stream "~%~a" (apply #'html:open-tag "meta" meta)))
+  (when link (format stream "~%~a~%" (apply #'html:open-tag "link" link)))
+  (format stream "~a~%" (html:close-tag "head"))
+  (format stream "~a~%" (html:open-tag "body")))
 
 (defun write-html-footer (stream &optional timestamp)
   (format stream "~%~a~%~a~%~a~%"
-          (or timestamp "") (html::close-tag "body") (html::close-tag "html")))
+          (or timestamp "") (html:close-tag "body") (html:close-tag "html")))
 
 ;;; this is crap, it assumes we are one level down when it is called. no time to fix now
 (defun home-page-link (&optional link-text)
-  (html::link (or link-text (long-name *application*)) "../application.html"))
+  (html:link (or link-text (long-name *application*)) "../application.html"))
 
 (defun doc-timestamp ()
-  (html::p
-     (html::tag "small"
-        (html::tag "em"
+  (html:p
+     (html:tag "small"
+        (html:tag "em"
            (format nil "(this page was generated on ~a)"
                    (local-time:format-timestring nil (local-time:now)
                         :format *documentation-timestamp-format*))))))
 
 (defmethod document ((des designation) (clarity t) (format (eql :html)) &optional stream)
-  (format stream "~a~a" (apply #'html::open-tag "table" *plain-table-attributes*) (line-feed))
+  (format stream "~a~a" (apply #'html:open-tag "table" *plain-table-attributes*) (line-feed))
   (with-nesting
     (format stream
             (table-rows
              nil
              (list (list "" :width "140px")
-                   (list (html::tag "b" "Singular") :width "400px" :align "center")
-                   (list (html::tag "b" "Plural") :width "400px" :align "center"))
-             (list (list (html::tag "b" "Base Name:") :align "right")
+                   (list (html:tag "b" "Singular") :width "400px" :align "center")
+                   (list (html:tag "b" "Plural") :width "400px" :align "center"))
+             (list (list (html:tag "b" "Base Name:") :align "right")
                    (name des)
                    (plural des))
-             (list (list (html::tag "b" "Abbreviated Name:") :align "right")
+             (list (list (html:tag "b" "Abbreviated Name:") :align "right")
                    (if (string-equal (short-name des) (name des)) "&nbsp" (short-name des))
                    (if (string-equal (short-plural des) (plural des)) "&nbsp" (short-plural des)))
-             (list (list (html::tag "b" "Descriptive Name:") :align "right")
+             (list (list (html:tag "b" "Descriptive Name:") :align "right")
                    (if (string-equal (short-name des) (long-name des)) "&nbsp" (long-name des))
                    (if (string-equal (short-plural des) (long-plural des)) "&nbsp" (long-plural des))))))
-  (format stream "~a~a" (html::close-tag "table") (line-feed)))
+  (format stream "~a~a" (html:close-tag "table") (line-feed)))
 
 
 (defmethod document ((desc descriptor) (clarity t) (format (eql :html)) &optional stream)
-  (format stream "~a~a" (apply #'html::open-tag "table" *plain-table-attributes*) (line-feed))
+  (format stream "~a~a" (apply #'html:open-tag "table" *plain-table-attributes*) (line-feed))
   (with-nesting
     (format stream
             (table-rows
              nil
-             (list (list (html::tag "b" "User Summary:") :align "right")
+             (list (list (html:tag "b" "User Summary:") :align "right")
                    (list (or (user-summary desc) "") :width "800px"))
-             (list (list  (html::tag "b" "User Detail:") :align "right")
+             (list (list  (html:tag "b" "User Detail:") :align "right")
                    (or (user-detail desc) ""))
-             (list (list (html::tag "b" "Technical Summary:") :align "right")
+             (list (list (html:tag "b" "Technical Summary:") :align "right")
                    (or (tech-summary desc) ""))
-             (list (list (html::tag "b" "Technical Detail:") :align "right")
+             (list (list (html:tag "b" "Technical Detail:") :align "right")
                    (or (tech-detail desc) "")))))
   (format stream "</table>~a" (line-feed)))
 ;;;===========================================================================

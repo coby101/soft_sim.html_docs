@@ -32,7 +32,7 @@ summary-attribute
           :meta (list :file-source
                       "write-html-docs in soft-sim/src/generators/web-docs/attributes.lisp")
           :style *documentation-stylesheet*)
-  (format stream (html::heading 1 (format nil "~a.~a" (name (my-entity att)) (name att)))))
+  (format stream (html:heading 1 (format nil "~a.~a" (name (my-entity att)) (name att)))))
 
 (defmethod write-blurb ((att attribute) &optional stream)
   (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att)
@@ -91,7 +91,7 @@ summary-attribute
   (list (list "Logical Type" (name (logical-type att)))
         (list "Default Value" (typecase (default-value att)
                                 (null "no default value")
-                                (formula (english::unparse-expression (default-value att)))
+                                (formula (english:unparse-expression (default-value att)))
                                 (attribute (format nil "~a from the related ~a record"
                                                    (name (default-value att))
                                                    (name (my-entity (default-value att)))))
@@ -112,7 +112,7 @@ summary-attribute
                 (t "restricted by datatype")))
         (list "Other Constraints" (if (constraints att)
                                       (format nil "~{~a~^<br>~}"
-                                              (mapcar #'english::unparse-expression
+                                              (mapcar #'english:unparse-expression
                                                       (mapcar #'formula (constraints att))))
                                       "no other constraints"))))
 
@@ -133,7 +133,7 @@ summary-attribute
 
 (defmethod datasheet-rows ((att calculated-attribute))
   (list (list "Logical Type" (name (logical-type att)))
-        (list "Formula" (format nil "~a" (english::unparse (formula att))))
+        (list "Formula" (format nil "~a" (english:unparse (formula att))))
         (list "My Entity"
               (make-links-to-object-reference
                (my-entity att) (short-plural (my-entity att))))

@@ -31,7 +31,7 @@
   (if (probe-file (merge-pathnames "local.lisp" *load-truename*))
       (load (merge-pathnames "local.lisp" *load-truename*))))
 
-(format t "~&To generate full documentation at any time run (web-docs::write-html-docs)")
+(format t "~&To generate full documentation at any time run (web-docs:write-html-docs)")
 
 
 ;;;===========================================================================
