@@ -31,9 +31,9 @@
            in the ~a application.~a<hr border=1px>" (short-name view)
            (length (views *application*))
            (html:link (long-name *application*) "../application.html")
-           (describe-source view))
+           (describe-source view (natural-language *application*)))
 
-  (write-synopsis (blurb view) stream)
+  (write-synopsis (blurb view (natural-language *application*)) stream)
   (format stream "<br>")
   (write-designation-section view stream)
   (format stream "<br>")
@@ -64,9 +64,9 @@
                             :align "left")
                       (list (format nil "~(~a~)" (format-english-list (operations asp)))
                             :align "left")
-                      (list (english:unparse (filters asp)) :align "left")
-                      (list (english:unparse (ordering asp)) :align "left")
-                      (list (format-english-list (mapcar #'english:unparse-expression
+                      (list (unparse (filters asp) :english) :align "left")
+                      (list (unparse (ordering asp) :english) :align "left")
+                      (list (format-english-list (mapcar #'(lambda (att) (unparse-expression att :english))
                                                          (accessible-attributes asp :read)))
                             :aligh "left")
                       (list (format-english-list (mapcar #'name (accessible-attributes asp :write)))
@@ -89,9 +89,9 @@
            in the ~a application.~a<hr border=1px>" (long-name (view aspect))
            (name (entity aspect)) (apply #'+ (mapcar #'length (mapcar #'aspects (views *application*))))
            (html:link (long-name *application*) "../application.html")
-           (describe-source (view aspect)))
+           (describe-source (view aspect) (natural-language *application*)))
   
-  (write-synopsis (blurb aspect) stream)
+  (write-synopsis (blurb aspect (natural-language *application*)) stream)
   (format stream "<br>")
   (write-table-section stream "Data Sheet" 2
           (datasheet-headings)
@@ -104,16 +104,15 @@
 (defmethod datasheet-rows ((asp aspect))
   (list (list "My View" (make-links-to-object-reference (view asp) (long-name (view asp))))
         (list "Entity" (make-links-to-object-reference (entity asp) (short-plural (entity asp))))
-        (list "Filters" (english:unparse (filters asp)))
-        (list "Default Sort Order" (english:unparse (ordering asp)))
+        (list "Filters" (unparse (filters asp) :english))
+        (list "Default Sort Order" (unparse (ordering asp) :english))
         (list "Allowed Operations" (format-english-list (operations asp)))
-        (list "List Layout" (if (list-panel asp) (html:unparse (list-panel asp)) "no layout defined"))
-        (list "Detail Layout" (if (detail-panel asp) (html:unparse (detail-panel asp)) "no layout defined"))
-        (list "Edit Record Layout" (if (edit-panel asp) (html:unparse (edit-panel asp)) "no layout defined"))
-        (list "Create Record Layout" (if (add-panel asp) (html:unparse (add-panel asp)) "no layout defined"))
-        (list "Context Layout" (if (context-panel asp) (html:unparse (context-panel asp)) "no layout defined"))
-        (list "Search Layout" (if (search-panel asp) (html:unparse (search-panel asp)) "no layout defined"))))
-
+        (list "List Layout" (if (list-panel asp) (unparse (list-panel asp) :html) "no layout defined"))
+        (list "Detail Layout" (if (detail-panel asp) (unparse (detail-panel asp) :html) "no layout defined"))
+        (list "Edit Record Layout" (if (edit-panel asp) (unparse (edit-panel asp) :html) "no layout defined"))
+        (list "Create Record Layout" (if (add-panel asp) (unparse (add-panel asp) :html) "no layout defined"))
+        (list "Context Layout" (if (context-panel asp) (unparse (context-panel asp) :html) "no layout defined"))
+        (list "Search Layout" (if (search-panel asp) (unparse (search-panel asp) :html) "no layout defined"))))
 
 (defmethod write-code-section ((aspect aspect) &optional stream)
   (let ((content (get-code-examples aspect)))
@@ -122,7 +121,6 @@
          (code-sample-table-headings)
          (code-sample-rows content))
       (warn "no code samples to display"))))
-
 
 ;;;===========================================================================
 ;;; Local variables:

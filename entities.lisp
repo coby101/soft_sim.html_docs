@@ -19,7 +19,7 @@
           :title (format nil "~a Entity Technical Specifications"
                          (short-name ent))
           :meta (list :file-source
-                      "write-html-docs in soft-sim/src/generators/web-docs/entities.lisp")
+                      "generate in soft-sim/src/generators/web-docs/entities.lisp")
           :link (list :rel "stylesheet" :type "text/css"
                       :href (strcat "../" (file-namestring (documentation-css-filepath)))))
   (format stream (html:heading 1 (format nil "Technical Detail for the ~a Entity "
@@ -29,18 +29,18 @@
                             (format (eql :html)) &optional stream)
   (write-html-footer stream))
 
-(defmethod write-blurb ((ent audit-entity) &optional stream)
+'(defmethod write-blurb ((ent audit-entity) &optional stream)
   (let ((blurb (make-links-to-object-reference
-                (find-audited-table ent) (blurb ent)
+                (find-audited-table ent) (blurb ent (natural-language *application*))
                 :name-string (short-plural (find-audited-table ent)))))
     (write-synopsis blurb stream)))
 
 (defmethod write-blurb ((ent weak-entity) &optional stream)
   (let ((blurb (if (keep-history? ent)
                    (make-links-to-object-reference
-                    (or (find-audit-table ent) ent) (blurb ent)
-                    :name-string (short-plural (or (find-audit-table ent) ent)))
-                   (blurb ent))))
+                    (or nil #|(find-audit-table ent)|# ent) (blurb ent (natural-language *application*))
+                    :name-string (short-plural (or nil #|(find-audit-table ent)|# ent)))
+                   (blurb ent (natural-language *application*)))))
     (write-synopsis
      (make-links-to-object-reference (owner ent) blurb :preamble "the " :postscript " entity"
                                      :name-string (name (owner ent)))
@@ -53,13 +53,13 @@
            (html:link (format nil "one of ~d entities" (length (application-entities *application*)))
                        "../entities.html")
            (home-page-link)
-           (describe-source ent)))
+           (describe-source ent (natural-language *application*))))
 
 (defmethod write-blurb ((ent entity) &optional stream)
   (let ((blurb (if (keep-history? ent)
                    (make-links-to-object-reference
-                    (or (find-audit-table ent) ent) (blurb ent) :name-string (short-plural (or (find-audit-table ent) ent)))
-                   (blurb ent)))
+                    (or nil #|(find-audit-table ent)|# ent) (blurb ent (natural-language *application*)) :name-string (short-plural (or nil #|(find-audit-table ent)|# ent)))
+                   (blurb ent (natural-language *application*))))
         (seed-data (ignore-errors (seed-data ent))))
     (when seed-data
       (setf blurb
@@ -77,7 +77,7 @@
          (if (constraints ent)
              (format nil "~{<tr><td>~a</td></tr>~}"
                      (mapcar #'(lambda(c)
-                                 (format nil "~a ~a" (english:unparse-expression (formula c))
+                                 (format nil "~a ~a" (unparse-expression (formula c) :english)
                                          (if (typep c 'constraint)
                                              (describe-entity-constraint-context (event c))
                                              "")))
@@ -101,7 +101,7 @@
                             (mapcar #'(lambda(st)
                                         (format nil "~a ~a"
                                                 (html:tag "td" (short-name st))
-                                                (html:tag "td" (english:unparse-expression (predicate st)))))
+                                                (html:tag "td" (unparse-expression (predicate st) :english))))
                                     (states ent))))
              "<tr><td colspan=2 width=\"1100px\">There are no user defined entity states</tr></td>")))
     (format stream
@@ -138,25 +138,25 @@
   (write-table-section stream "Database Key Fields" 2
           (db-key-table-headings)
           (db-key-rows ent))
-  (write-table-section stream "Meta-data" 2
-          (audit-attribute-table-headings)
-          (audit-attribute-rows ent))
+;  (write-table-section stream "Meta-data" 2
+;          (audit-attribute-table-headings)
+;          (audit-attribute-rows ent))
   (format stream "<br>")
   (write-code-section ent stream)
   (when (ignore-errors (seed-data ent))
     (write-seed-data ent stream)))
 
 (defmethod write-seed-data ((ent entity) &optional (stream t))
-  (let ((data (seed-data ent)))
-    (write-table-section stream "Seed Data" 2
-        (format nil "<tr>~{<th>~a</th>~}</tr>"
-                (mapcar #'(lambda (col)
-                            (name (find-field (keywordify col) (id ent))))
-                        (car data)))
-         (cdr data))))
+  (unless nil ;"disabled"
+    (let ((data (seed-data ent)))
+      (write-table-section stream "Seed Data" 2
+          (format nil "<tr>~{<th>~a</th>~}</tr>"
+                  (mapcar #'(lambda (col)
+                              (name (find-field (keywordify col) (id ent))))
+                          (car data)))
+           (cdr data)))))
 
-
-(defmethod document ((ent audit-entity) (clarity (eql :detailed)) (format (eql :html)) &optional stream)
+'(defmethod document ((ent audit-entity) (clarity (eql :detailed)) (format (eql :html)) &optional stream)
   (write-blurb ent stream)
   ;; (constraints)
   (format stream "<br>")
@@ -224,7 +224,7 @@
                                   (list (type-of my-relationship) :align "left")
                                   (list (multiplicity role) :align "center")
                                   (list (format-english-list
-                                         (mapcar #'english:unparse-expression
+                                         (mapcar #'(lambda (formula) (unparse-expression formula :english))
                                                  (mapcar #'formula (append (constraints role)
                                                                            (apply #'append
                                                                                   (mapcar #'constraints (my-relations role)))))))
@@ -273,14 +273,14 @@
                                 (mapcar #'(lambda (a)
                                             (format nil "\"~a\" (~a field)" (name a)
                                                     (designation-with-article
-                                                     (logical-type a) 'name nil)))
+                                                     (logical-type a) 'name (natural-language *application*))))
                                         (user-attributes (child-entity att))))
                                :align "left")
                               (list (or (description att) "") :align "left"))))
                   (sort (copy-list (multi-valued-attributes ent)) #'string-lessp :key #'name))
           (super-class-table-rows ent #'multivalued-attribute-rows 6)))
 
-(defun audit-attribute-table-headings ()
+'(defun audit-attribute-table-headings ()
   (html:tag
    "tr"
      (with-nesting
@@ -291,7 +291,7 @@
                (html:tag "th" "Data Type") (line-feed)
                (html:tag "th" "Additional Description") (line-feed)))))
 
-(defmethod audit-attribute-rows ((ent entity))
+'(defmethod audit-attribute-rows ((ent entity))
   (mapcar #'(lambda (att)
               (with-nesting
                 (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
@@ -358,18 +358,18 @@
                               (list (long-name att) :align "left")
                               (list (name (logical-type att)) :align "center")
                               (list (data-type att) :align "center")
-                              (list (or (uniqueness att) "") :align "center")
+                              (list (or (describe-uniqueness att (natural-language *application*)) "") :align "center")
                               (list (if (nullable? att) "" "mandatory") :align "center")
                               (list (if (constraints att)
                                         (format nil "~{~a~^<br>~}"
-                                                (mapcar #'english:unparse-expression
+                                                (mapcar #'(lambda (formula) (unparse-expression formula :english))
                                                         (mapcar #'formula (constraints att))))
                                         "no other constraints"))
                               (list (or (description att) "") :align "left"))))
                   (sort (copy-list (user-attributes ent)) #'string-lessp :key #'name))
           (super-class-table-rows ent #'user-defined-stored-attribute-rows 8)))
 
-(defmethod auditable-attribute-rows ((ent entity))
+'(defmethod auditable-attribute-rows ((ent entity))
   (mapcar #'(lambda (att)
               (with-nesting
                 (list (list (html:link (name att) (strcat "../" (document-link att))) :align "left")
@@ -377,7 +377,7 @@
                       (list (long-name att) :align "left")
                       (list (name (logical-type att)) :align "center")
                       (list (data-type att) :align "center")
-                      (list (or (uniqueness att) "") :align "center")
+                      (list (or (describe-uniqueness att (natural-language *application*)) "") :align "center")
                       (list (if (nullable? att) "" "mandatory") :align "center")
                       (list (or (description att) "") :align "left"))))
           (sort (copy-list (auditable-attributes ent)) #'string-lessp :key #'name)))
@@ -428,7 +428,7 @@
                               (list (short-name att) :align "left")
                               (list (long-name att) :align "left")
                               (list (name (logical-type att)) :align "center")
-                              (list (english:unparse (formula att)) :align "left")
+                              (list (unparse (formula att) :english) :align "left")
                               (list (or (description att) "") :align "left"))))
                   (sort (copy-list (calculated-attributes ent)) #'string-lessp :key #'name))
           (super-class-table-rows ent #'user-defined-derived-attribute-rows 6)))

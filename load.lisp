@@ -13,14 +13,28 @@
 
 (in-package simian)
 
-(defpackage :web-docs
-  (:use :simian :calendar :cl)
-  (:export #:write-html-docs))
+(defpackage :html-docs
+  (:nicknames :web-docs)
+  (:use
+   :cl
+   :software-simian
+   :documentation
+   :interrogation
+   :foundation
+   :utilities
+   :unparser
+   :attribute
+   :formula
+   :interface
+   :attribute
+   :entity
+   :relationship)
+  (:export #:generate))
 
 (in-package :web-docs)
 
 (let ((sb-ext:*muffled-warnings* 'style-warning))
-  (load-unparser "english")
+  (load-unparser (or (ignore-errors (natural-language foundation:*application*)) "english"))
   (load-unparser "html")
   (load-unparser "dot")
   (load (merge-pathnames "general.lisp" *load-truename*))
@@ -38,7 +52,7 @@
   (if (probe-file (merge-pathnames "local.lisp" *load-truename*))
       (load (merge-pathnames "local.lisp" *load-truename*))))
 
-(format t "~&To generate full documentation at any time run (web-docs:write-html-docs)")
+(format t "~&To generate full documentation at any time run (html-docs:generate)")
 
 
 ;;;===========================================================================

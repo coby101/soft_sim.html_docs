@@ -13,34 +13,23 @@
 
 (in-package :web-docs)
 
-#|
-user-attributes
-calculated-attribute
-inherited-attribute
-summary-attribute
-multi-valued-attribute
-audit-attribute
-db-key
-summary-attribute
-|#
-
 (defmethod document :before ((att attribute) (clarity (eql :detailed))
                              (format (eql :html)) &optional stream)
   (write-html-header stream
           :title (format nil "~a ~a Attribute Technical Specifications"
                          (short-name (my-entity att)) (short-name att))
           :meta (list :file-source
-                      "write-html-docs in soft-sim/src/generators/web-docs/attributes.lisp")
+                      "generate in soft-sim/src/generators/web-docs/attributes.lisp")
           :style *documentation-stylesheet*)
   (format stream (html:heading 1 (format nil "~a.~a" (name (my-entity att)) (name att)))))
 
 (defmethod write-blurb ((att attribute) &optional stream)
-  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att)
+  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att (natural-language *application*))
                       :preamble "the " :postscript " table")))
     (write-synopsis blurb stream)))
 
 (defmethod write-blurb ((att summary-attribute) &optional stream)
-  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att)))
+  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att (natural-language *application*))))
          (sum-source (source att)))
     (write-synopsis
      (make-links-to-object-reference (my-entity sum-source) blurb
@@ -48,7 +37,7 @@ summary-attribute
      stream)))
 
 (defmethod write-blurb ((att foreign-key) &optional stream)
-  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att)
+  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att (natural-language *application*))
                                                 :postscript " table" :preamble "the "))
          (target (my-entity (source att))))
     (write-synopsis
@@ -57,7 +46,7 @@ summary-attribute
      stream)))
 
 (defmethod write-blurb ((att arc-key) &optional stream)
-  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att)
+  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att (natural-language *application*))
                                                 :postscript " table" :preamble "the ")))
 ;;         (target (my-entity (source att))))
     (write-synopsis blurb
@@ -66,7 +55,7 @@ summary-attribute
      stream)))
 
 (defmethod write-blurb ((att multi-valued-attribute) &optional stream)
-  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att)))
+  (let* ((blurb (make-links-to-object-reference (my-entity att) (blurb att (natural-language *application*))))
          (target (child-entity att)))
     (write-synopsis
      (make-links-to-object-reference target blurb
@@ -91,11 +80,11 @@ summary-attribute
   (list (list "Logical Type" (name (logical-type att)))
         (list "Default Value" (typecase (default-value att)
                                 (null "no default value")
-                                (formula (english:unparse-expression (default-value att)))
+                                (formula (unparse-expression (default-value att) :english))
                                 (attribute (format nil "~a from the related ~a record"
                                                    (name (default-value att))
                                                    (name (my-entity (default-value att)))))
-                                (t (formatted-value (logical-type att) (default-value att)))))
+                                (t (formatted-value (logical-type att) (natural-language *application*) (default-value att)))))
         (list "My Entity"
               (make-links-to-object-reference
                (my-entity att) (short-plural (my-entity att))))
@@ -112,7 +101,7 @@ summary-attribute
                 (t "restricted by datatype")))
         (list "Other Constraints" (if (constraints att)
                                       (format nil "~{~a~^<br>~}"
-                                              (mapcar #'english:unparse-expression
+                                              (mapcar #'(lambda (formula) (unparse-expression formula :english))
                                                       (mapcar #'formula (constraints att))))
                                       "no other constraints"))))
 
@@ -133,7 +122,7 @@ summary-attribute
 
 (defmethod datasheet-rows ((att calculated-attribute))
   (list (list "Logical Type" (name (logical-type att)))
-        (list "Formula" (format nil "~a" (english:unparse (formula att))))
+        (list "Formula" (format nil "~a" (unparse (formula att) :english)))
         (list "My Entity"
               (make-links-to-object-reference
                (my-entity att) (short-plural (my-entity att))))

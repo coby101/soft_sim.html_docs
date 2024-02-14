@@ -20,7 +20,7 @@
           :title (format nil "~a Relationship Technical Details"
                          (short-name rel))
           :meta (list :file-source
-                      "write-html-docs in soft-sim/src/generators/relationships.lisp")
+                      "generate in soft-sim/src/generators/relationships.lisp")
           :style *documentation-stylesheet*)
   (format stream (html:heading 1 (format nil "~a" (short-name rel)))))
 
@@ -32,7 +32,7 @@
 
 (defmethod write-blurb ((rel binary-relationship) &optional stream)
   (let* ((blurb (make-links-to-object-reference (entity (rhs rel))
-                  (blurb rel) :name-string (short-name (entity (rhs rel)))
+                  (blurb rel (natural-language *application*)) :name-string (short-name (entity (rhs rel)))
                   :postscript " records")))
     (write-synopsis (make-links-to-object-reference (entity (lhs rel))
                        blurb :name-string (short-name (entity (lhs rel)))
@@ -79,11 +79,11 @@
         ((not (complete? relationship))
          (format nil "~a are independent from ~a" my-plural my-relation-plural))
         (t (format nil "~a need to have a subclass record but it need not be ~a"
-                         my-plural (with-article my-relation-singular))))
+                         my-plural (with-article my-relation-singular (natural-language *application*)))))
       (ecase (dependency relation)
         (:independent (format nil "~a are independent from ~a" my-plural my-relation-plural))
         (:changeable (format nil "~a need ~a but can move from one to another"
-                             my-plural (with-article my-relation-singular)))
+                             my-plural (with-article my-relation-singular (natural-language *application*))))
         (:complete (format nil "~a can not exist outside of the ~a relationship"
                            my-plural relationship-name))
         (:dependent (format nil "~a are required to be in a ~a relationship"
@@ -99,8 +99,8 @@
         (list "Navigable?"
               (if (navigable? rel)
                   (format nil "Users can get to ~a from ~a"
-                          (with-article (format-english-or-list (mapcar #'short-name (my-relations rel))))
-                          (with-article (short-name rel)))
+                          (with-article (format-english-or-list (mapcar #'short-name (my-relations rel))) (natural-language *application*))
+                          (with-article (short-name rel) (natural-language *application*)))
                   (format nil "~a are not reachable from ~a"
                           (format-english-list (mapcar #'short-plural (my-relations rel)))
                           (short-plural rel))))
@@ -108,7 +108,7 @@
         (list "Constraints"
               (if (constraints rel)
                   (format nil "~{~a~^<br>~}"
-                          (mapcar #'english:unparse-expression (constraints rel)))
+                          (mapcar #'(lambda (con) (unparse-expression con :english)) (constraints rel)))
                   "there are no constraints on this side of the relationship"))))
 
 ;;;===========================================================================

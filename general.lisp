@@ -113,6 +113,13 @@ img {   max-width: 100%;
 (defparameter *plain-td-padding*  ;; not used anywhere yet
   "padding: 1px 5px 1px 5px;")
 
+(defun line-feed(&optional (level *nesting-level*))
+  (if *pretty-print-code*
+      (with-output-to-string (str)
+        (format str "~%~a"
+                (make-string (* 4 level) :initial-element #\Space)))
+      " "))
+
 (defmethod formula ((str string))
   str)
 
@@ -211,6 +218,58 @@ img {   max-width: 100%;
   (let ((name (strcat (name (my-entity att)) "." (name att))))
     (strcat "attributes/" (file-namestring (document-file-path "entities" name "html")))))
 
+(defun generate (&optional (app *application*))
+  (let ((*application* app))
+    (if (null *application*)
+        "no application object defined, nothing written"
+        (let ((*nesting-level* 0))
+          (let ((total-entities (length (schema app)))
+                (total-attributes (length (apply #'append (mapcar #'attributes (schema app)))))
+                (total-relationsips (length (relationships app)))
+                (total-views (length (views app)))
+                (total-aspects (length (apply #'append (mapcar #'aspects (views app))))))
+            (write-documentation-css-file)
+            (with-open-file (main (document-file-path "" "application" "html")
+                                  :direction :output :if-exists :supersede)
+              (write-html-header main
+                                 :title (format nil "Technical Specifications for project ~a"
+                                                (ignore-errors (short-name app)))
+                                 :meta '(:file-source "generate in soft-sim/src/documentation.lisp")
+                                 :link (list :rel "stylesheet" :type "text/css"
+                                             :href (file-namestring (documentation-css-filepath))))
+              (format main (html:heading 1 (format nil "~a Technical Documentation" (long-name app))))
+              (format main "
+This page provides technical documentation for the ~a web application. The ~a application is owned by ~
+~a and this material is for internal use. All intellectual property contained herein remains ~a's ~
+own.  Below you can find links to further detail." (long-name app) (id app) (client app) (client app))
+              (format main (html:heading 3 (html:link "Application Views" "interface.html")))
+              (format main (html:heading 3 (html:link "Entity Definitions" "entities.html")))
+              (format main (html:heading 3 (html:link "Entity Relationships" "relationships.html")))
+              (format main (html:heading 3 (html:link "Application Subsystems" "subsystems.html")))
+
+              (with-open-file (intf (document-file-path "" "interface" "html")
+                                    :direction :output :if-exists :supersede)
+                (write-interface-page app intf))
+            
+              (with-open-file (ents (document-file-path "" "entities" "html")
+                                    :direction :output :if-exists :supersede)
+                (write-entity-page app ents))
+
+              (with-open-file (rels (document-file-path "" "relationships" "html")
+                                    :direction :output :if-exists :supersede)
+                (write-relationship-page app rels))
+
+              (with-open-file (mods (document-file-path "" "subsystems" "html")
+                                    :direction :output :if-exists :supersede)
+                (write-modules-page app mods))
+
+              (write-html-footer main (doc-timestamp)))
+            (format t "wrote pages for ~a entities, ~a relationships, ~
+                      ~a attributes, ~a views and ~a aspects (~a total pages)"
+                    total-entities total-relationsips total-attributes total-views total-aspects
+                    (+ total-relationsips total-attributes total-entities total-views total-aspects))
+            (format t "~%~%see documentation at ~a" (document-file-path "" "application" "html")))))))
+
 (defun entity-rank (ent)
   (+ (typecase ent
        (control-table 800)
@@ -229,63 +288,11 @@ img {   max-width: 100%;
 (defun ranked-entities (&optional (app *application*))
   (sort (copy-list (schema app)) #'string-lessp :key #'name))
 
-(defun write-html-docs (&optional (app *application*))
-  (declare (ignorable app))
-  (if (null *application*)
-      "no application object defined, nothing written"
-      (let ((*nesting-level* 0))
-        (let ((total-entites (length (schema app)))
-              (total-attributes (length (apply #'append (mapcar #'attributes (schema app)))))
-              (total-relationsips (length (find-all-relationships)))
-              (total-views (length (views app)))
-              (total-aspects (length (apply #'append (mapcar #'aspects (views app))))))
-          (write-documentation-css-file)
-          (with-open-file (main (document-file-path "" "application" "html")
-                                :direction :output :if-exists :supersede)
-            (write-html-header main
-                               :title (format nil "Technical Specifications for project ~a"
-                                              (ignore-errors (short-name app)))
-                               :meta '(:file-source "write-html-docs in soft-sim/src/documentation.lisp")
-                               :link (list :rel "stylesheet" :type "text/css"
-                                           :href (file-namestring (documentation-css-filepath))))
-            (format main (html:heading 1 (format nil "~a Technical Documentation" (long-name app))))
-            (format main "
-This page provides technical documentation for the ~a web application. The ~a application is owned by ~
-~a and this material is for internal use. All intellectual property contained herein remains ~a's ~
-own.  Below you can find links to further detail." (long-name app) (id app) (client app) (client app))
-            (format main (html:heading 3 (html:link "Application Views" "interface.html")))
-            (format main (html:heading 3 (html:link "Entity Definitions" "entities.html")))
-            (format main (html:heading 3 (html:link "Entity Relationships" "relationships.html")))
-            (format main (html:heading 3 (html:link "Application Subsystems" "subsystems.html")))
-
-            (with-open-file (intf (document-file-path "" "interface" "html")
-                                  :direction :output :if-exists :supersede)
-              (write-interface-page app intf))
-            
-            (with-open-file (ents (document-file-path "" "entities" "html")
-                                  :direction :output :if-exists :supersede)
-              (write-entity-page app ents))
-
-            (with-open-file (rels (document-file-path "" "relationships" "html")
-                                  :direction :output :if-exists :supersede)
-              (write-relationship-page app rels))
-
-            (with-open-file (mods (document-file-path "" "subsystems" "html")
-                                  :direction :output :if-exists :supersede)
-              (write-modules-page app mods))
-
-            (write-html-footer main (doc-timestamp)))
-           (format t "wrote pages for ~a entites, ~a relationships, ~
-                      ~a attributes, ~a views and ~a aspects (~a total pages)"
-                   total-entites total-relationsips total-attributes total-views total-aspects
-                   (+ total-relationsips total-attributes total-entites total-views total-aspects))
-           (format t "~%~%see documentation at ~a" (document-file-path "" "application" "html"))))))
-
 (defun write-entity-page (app stream)
   (write-html-header stream
    :title (format nil "Entity Specifications for project ~a"
                        (ignore-errors (short-name app)))
-   :meta (list :file-source "write-html-docs in soft_sim/generators/web-docs/general.lisp")
+   :meta (list :file-source "generate in soft_sim/generators/web-docs/general.lisp")
    :link (list :rel "stylesheet" :type "text/css"
                :href (file-namestring (documentation-css-filepath))))
   (format stream (html:link "Documentation Home" "application.html"))
@@ -322,7 +329,7 @@ own.  Below you can find links to further detail." (long-name app) (id app) (cli
   (format stream (html:tag "h1" name))
   (format stream "~%<ul>~%")
   (dolist (ent entities)
-    (unless (typep ent 'audit-entity)
+    (unless nil ;(typep ent 'audit-entity)
       (format stream "~%<li>~a</li>"
               (html:link (name ent) (document-link ent))))
     (create-entity-graphs ent)
@@ -346,13 +353,13 @@ own.  Below you can find links to further detail." (long-name app) (id app) (cli
   (write-html-header stream
    :title (format nil "Relationship Definitions for project ~a"
                        (ignore-errors (short-name app)))
-   :meta (list :file-source "write-html-docs in soft_sim/generators/web-docs/general.lisp")
+   :meta (list :file-source "generate in soft_sim/generators/web-docs/general.lisp")
    :link (list :rel "stylesheet" :type "text/css"
                :href (file-namestring (documentation-css-filepath))))
   (format stream (html:link "Documentation Home" "application.html"))
   (format stream (html:tag "h1" "Relationships"))
   (format stream "~%<ul>~%")
-  (dolist (rel (find-all-relationships))
+  (dolist (rel (relationships app))
     (format stream "~%<li>~a : <small><em>(~a)</em></small></li>"
             (html:link (short-name rel) (document-link rel))
             (ascii-depiction rel))
@@ -459,14 +466,14 @@ for (i = 0; i < coll.length; i++) {
   (write-html-header stream
    :title (format nil "Application Subsystems for project ~a"
                        (ignore-errors (short-name app)))
-   :meta (list :file-source "write-html-docs in soft_sim/generators/web-docs/general.lisp")
+   :meta (list :file-source "generate in soft_sim/generators/web-docs/general.lisp")
    :link (list :rel "stylesheet" :type "text/css"
                :href (file-namestring (documentation-css-filepath))))
   (format stream (html:link "Documentation Home" "application.html"))
   (format stream (html:tag "h1" "Application Subsystems"))
 
   (let ((subsystems (append *sub-systems*
-                            (remove nil (list (when simian:*load-calendar-framework* (list* "Calendar Entities" (calendar:calendar-entities)))
+                            (remove nil (list (list* "Calendar Entities" (calendar-entities))
                                               (list* "Framework Entities" (framework-entities app))
                                               (list* "Application Framework" (application-framework-entities app))
                                               (list* "Full Schema" (schema-entities app)))))))
@@ -483,7 +490,7 @@ for (i = 0; i < coll.length; i++) {
   (write-html-header stream
    :title (format nil "Application Interfaces for project ~a"
                        (ignore-errors (short-name app)))
-   :meta (list :file-source "write-html-docs in soft_sim/generators/web-docs/general.lisp")
+   :meta (list :file-source "generate in soft_sim/generators/web-docs/general.lisp")
    :link (list :rel "stylesheet" :type "text/css"
                :href (file-namestring (documentation-css-filepath))))
   (format stream (html:link "Documentation Home" "application.html"))
@@ -540,7 +547,7 @@ for (i = 0; i < coll.length; i++) {
                           (symbol (html:tag "td" (symbol-name cell)))
                           (number (html:tag "td" cell))
                           (string (html:tag "td" cell))
-                          (list (apply #'html:tag "td" (car cell) (cdr cell)))))
+                          (list   (apply #'html:tag "td" cell)))) ;(apply #'html:tag "td" (car cell) (cdr cell)))))
                     cells))))
 
 (defun table-rows (attributes &rest rows)
