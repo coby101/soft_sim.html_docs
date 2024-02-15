@@ -54,7 +54,6 @@
 
 (format t "~&To generate full documentation at any time run (html-docs:generate)")
 
-
 ;;;===========================================================================
 ;;; Local variables:
 ;;; tab-width: 4
