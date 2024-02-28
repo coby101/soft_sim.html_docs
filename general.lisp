@@ -130,7 +130,7 @@ img {   max-width: 100%;
 (defun documentation-directory (&rest sub-dirs)
   (ensure-directories-exist
    (merge-pathnames
-    (make-pathname :directory (cons :relative (list* *application-name* sub-dirs)))
+    (make-pathname :directory (cons :relative (list* (name *application*) sub-dirs)))
     *documentation-directory*)))
 
 (defun documentation-css-filepath ()
